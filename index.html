@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio Cupula | Archivo</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-color: #1a1a1a;
+            --accent-color: #e63946; /* Rojo para las obras */
+            --bg-color: #ffffff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Header Minimalista */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+        }
+
+        /* Menú Desplegable */
+        .nav-container {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 12px 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-content a:hover {
+            background: #f8f9fa;
+        }
+
+        .nav-container:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Mapa Full Screen */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: #fff;
+        }
+
+        /* ESTÉTICA DEL MAPA: Escala de grises técnica */
+        .leaflet-tile-container {
+            filter: grayscale(1) contrast(1.1) brightness(0.98);
+        }
+
+        /* MARCADOR DE FLECHA ROJA EN RELIEVE */
+        .marker-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .marker-pin {
+            width: 20px;
+            height: 24px;
+            background-color: var(--accent-color);
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .marker-shadow {
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 6px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            filter: blur(2px);
+            z-index: 1;
+        }
+
+        .marker-container:hover .marker-pin {
+            transform: translateY(-3px);
+        }
+
+        /* Popup Estilo Galería */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.1);
+            padding: 5px;
+        }
+
+        .leaflet-popup-tip {
+            display: none;
+        }
+
+        .popup-info h4 {
+            margin: 0 0 5px 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+        }
+
+        .popup-info p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Estudio Cupula</div>
+        <nav class="nav-container">
+            <button class="menu-btn">Menú —</button>
+            <div class="dropdown-content">
+                <a href="#">Proyectos</a>
+                <a href="#">Estudio</a>
+                <a href="#">Contacto</a>
+                <a href="#">Archivo 2024</a>
+            </div>
+        </nav>
+    </header>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        /*******************************************************************************
+         * BASE DE DATOS DE PROYECTOS
+         *******************************************************************************/
+        const projects = [
+            { title: "Azcuénaga 1517", year: "2024", area: "Recoleta", lat: -34.5913438, lng: -58.3979162 },
+            { title: "Zapiola 1781", year: "2024", area: "Belgrano", lat: -34.57012, lng: -58.45521 },
+            { title: "Roseti 1621", year: "2024", area: "Chacarita", lat: -34.58405, lng: -58.45638 },
+            { title: "Soria 5163", year: "2024", area: "Palermo Soho", lat: -34.58342, lng: -58.43211 },
+            { title: "Ugarteche 3244", year: "2024", area: "Palermo Chico", lat: -34.57965, lng: -58.40982 },
+            { title: "O'Higgins 2110", year: "2024", area: "Belgrano C", lat: -34.56123, lng: -58.45234 },
+            { title: "Florida 2130", year: "2024", area: "Olivos", lat: -34.51523, lng: -58.49845 },
+            { title: "Anatole France 855", year: "2024", area: "Lanús Este", lat: -34.70812, lng: -58.37543 }
+        ];
+
+        // Inicializar Mapa
+        const map = L.map('map', {
+            center: [-34.58, -58.43],
+            zoom: 13,
+            zoomControl: false,
+            attributionControl: false
+        });
+
+        // Capa técnica clara (Positron)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20
+        }).addTo(map);
+
+        const markers = [];
+
+        // Renderizar Marcadores con Relieve
+        projects.forEach(project => {
+            const markerIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `
+                    <div class="marker-container">
+                        <div class="marker-shadow"></div>
+                        <div class="marker-pin"></div>
+                    </div>
+                `,
+                iconSize: [20, 30],
+                iconAnchor: [10, 24]
+            });
+
+            const marker = L.marker([project.lat, project.lng], { icon: markerIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="popup-info">
+                        <h4>${project.title}</h4>
+                        <p>${project.area} — ${project.year}</p>
+                    </div>
+                `);
+            
+            markers.push(marker);
+        });
+
+        // Ajustar vista para ver todos los marcadores al cargar
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+
+    </script>
+</body>
+</html>
