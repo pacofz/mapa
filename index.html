@@ -9,42 +9,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     
     <style>
-        :root { 
-            --text-color: #1a1a1a; 
-            --accent-color: #000; 
-            --bg-color: #ffffff; 
-            --gray-light: #f4f4f4;
-        }
-
+        :root { --text-color: #1a1a1a; --accent-color: #000; --bg-color: #ffffff; }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        /* Header con Contadores */
         header { 
             position: fixed; top: 0; left: 0; width: 100%; height: 80px; 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 0 40px; box-sizing: border-box; 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); z-index: 2000; 
-            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); 
+            z-index: 2000; border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
 
         .header-left { display: flex; align-items: center; gap: 30px; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; white-space: nowrap; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; }
 
-        /* Estilo de los Contadores */
         .counters-container { display: flex; gap: 20px; }
         .counter-item { display: flex; flex-direction: column; line-height: 1.2; }
         .counter-label { font-size: 0.6rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
-        .counter-value { font-size: 1.1rem; font-weight: 600; color: var(--text-color); }
+        .counter-value { font-size: 1.1rem; font-weight: 600; }
 
-        /* Menú */
-        .menu-btn { background: none; border: none; font-family: 'Inter', sans-serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; }
-
-        /* Mapa */
         #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #f0f0f0; }
         .leaflet-tile-container { filter: grayscale(1) contrast(1.1) brightness(0.98); }
 
-        /* Marcadores y Popups */
         .marker-pin { width: 18px; height: 18px; background-color: #000; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); margin: -9px 0 0 -9px; border: 1px solid #fff; }
         .leaflet-popup-content-wrapper { border-radius: 0; padding: 0; overflow: hidden; width: 300px; }
         .leaflet-popup-content { margin: 0; width: 300px !important; }
@@ -53,19 +39,12 @@
         .popup-gallery img.fading { opacity: 0; }
         .gallery-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; transform: translateY(-50%); z-index: 10; }
         .nav-arrow { background: rgba(255,255,255,0.7); border: none; width: 30px; height: 30px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .popup-info { padding: 18px; }
-        .popup-info h4 { margin: 0 0 8px 0; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
-        .popup-info p { font-size: 0.75rem; color: #555; line-height: 1.4; }
-
-        /* Mobile Responsive */
+        
         @media (max-width: 600px) {
             header { padding: 0 15px; height: 70px; }
             .header-left { gap: 15px; }
             .logo { font-size: 1.1rem; }
             .counter-value { font-size: 0.9rem; }
-            .counter-label { font-size: 0.5rem; }
-            .counters-container { gap: 10px; }
-            .menu-btn { font-size: 0.7rem; letter-spacing: 1px; }
         }
     </style>
 </head>
@@ -85,21 +64,18 @@
                 </div>
             </div>
         </div>
-        <button class="menu-btn">Menú —</button>
+        <button style="background:none; border:none; cursor:pointer;">MENÚ —</button>
     </header>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- ANIMACIÓN DE CONTADORES ---
+        // ANIMACIÓN DE NÚMEROS
         function animateCounter(id, target) {
             const obj = document.getElementById(id);
             let current = 0;
-            const duration = 2000; // 2 segundos
-            const stepTime = 20; // 50 frames por segundo aprox
-            const increment = target / (duration / stepTime);
-            
+            const increment = target / 100;
             const timer = setInterval(() => {
                 current += increment;
                 if (current >= target) {
@@ -108,20 +84,16 @@
                 } else {
                     obj.innerText = Math.floor(current);
                 }
-            }, stepTime);
+            }, 20);
         }
 
-        // Ejecutar al cargar la ventana
-        window.addEventListener('load', () => {
+        window.onload = () => {
             animateCounter('count-cero', 650);
             animateCounter('count-refac', 2500);
-        });
+        };
 
-        // --- LÓGICA DEL MAPA ---
         const projects = [
-            { title: "Azcuénaga 1517", folder: "azcuenaga", year: "2024", area: "Recoleta", lat: -34.59134, lng: -58.39791, desc: "Refuncionalización integral de unidad de vivienda.", imgCount: 3 },
-            { title: "Av. Pueyrredón 1975", folder: "pueyrredon", year: "2024", area: "Recoleta", lat: -34.5898, lng: -58.3965, desc: "Intervención estética en áreas comunes.", imgCount: 1 },
-            { title: "José Manuel Estrada 1845", folder: "estrada", year: "2024", area: "Martínez", lat: -34.4921, lng: -58.4982, desc: "Vivienda unifamiliar moderna.", imgCount: 2 }
+            { title: "Azcuénaga 1517", folder: "azcuenaga", year: "2024", area: "Recoleta", lat: -34.59134, lng: -58.39791, desc: "Refuncionalización integral.", imgCount: 3 }
         ];
 
         const galleryState = {};
@@ -140,7 +112,7 @@
             }, 400);
         };
 
-        const map = L.map('map', { center: [-34.58, -58.43], zoom: 12, zoomControl: false, attributionControl: false });
+        const map = L.map('map', { center: [-34.591, -58.397], zoom: 13, zoomControl: false, attributionControl: false });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
         projects.forEach(project => {
@@ -148,15 +120,15 @@
             const popupContent = `
                 <div class="project-popup">
                     <div class="popup-gallery">
-                        <img id="img-obj-${project.folder}" src="assets/images/${project.folder}/1.jpeg" alt="${project.title}">
+                        <img id="img-obj-${project.folder}" src="assets/images/${project.folder}/1.jpeg">
                         <div class="gallery-nav">
                             <button class="nav-arrow" onclick="changeImg('${project.title}', -1)">❮</button>
                             <button class="nav-arrow" onclick="changeImg('${project.title}', 1)">❯</button>
                         </div>
                     </div>
-                    <div class="popup-info">
+                    <div style="padding:15px;">
                         <h4>${project.title}</h4>
-                        <p>${project.desc}</p>
+                        <p style="font-size:0.75rem; color:#666;">${project.desc}</p>
                     </div>
                 </div>`;
             L.marker([project.lat, project.lng], { icon: markerIcon }).addTo(map).bindPopup(popupContent);
